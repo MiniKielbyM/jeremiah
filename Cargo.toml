@@ -1,0 +1,16 @@
+[package]
+name = "jerimiah"
+description = "stupid robot nuisance. now in real life!"
+readme = "README.md"
+version = "0.1.0"
+edition = "2021"
+authors = ["Clover Johnson", "Phoebe Kielbasinski"]
+
+[package.metadata.v5]
+slot = 1
+icon = "pizza"
+compress = true
+
+[dependencies]
+anyhow = { version = "1.0.89", default-features = false }
+vexide = "0.4.0"
