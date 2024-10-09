@@ -1,6 +1,6 @@
 [package]
-name = "jerimiah"
-description = "stupid robot nuisance. now in real life!"
+name = "jeremiah"
+description = "stupid robot nuisance. now in 3d!"
 readme = "README.md"
 version = "0.1.0"
 edition = "2021"
