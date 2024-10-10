@@ -19,4 +19,4 @@ jobs:
             - name: Check
               uses: actions-rs/cargo@v1
               with:
-                  command: check
+                  command: clippy

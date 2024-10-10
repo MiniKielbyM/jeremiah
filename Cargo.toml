@@ -2,7 +2,7 @@
 name = "jeremiah"
 description = "stupid robot nuisance. now in 3d!"
 readme = "README.md"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Clover Johnson", "Phoebe Kielbasinski"]
 
