@@ -13,4 +13,6 @@ compress = true
 
 [dependencies]
 anyhow = { version = "1.0.89", default-features = false }
-vexide = "0.4.0"
+embedded-graphics = "0.8.1"
+vexide = { version = "0.4.0", features = ["embedded-graphics"] }
+vexide-graphics = { version = "0.1.5", features = ["embedded-graphics"] }

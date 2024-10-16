@@ -10,15 +10,17 @@ pub struct Jeremiah {
     motor_right_front: Motor,
     motor_right_back: Motor,
     controller: Controller,
+    screen: BrainDisplay
 }
 
 impl Jeremiah {
-    pub const fn new(
+    pub fn new(
         motor_left_front: Motor,
         motor_left_back: Motor,
         motor_right_front: Motor,
         motor_right_back: Motor,
         controller: Controller,
+        screen: Screen
     ) -> Self {
         Self {
             motor_left_front,
@@ -26,6 +28,7 @@ impl Jeremiah {
             motor_right_front,
             motor_right_back,
             controller,
+            screen: BrainDisplay::new(screen)
         }
     }
 }

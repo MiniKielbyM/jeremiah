@@ -16,9 +16,8 @@ async fn main(peripherals: Peripherals) -> Result<()> {
         Motor::new(peripherals.port_2, Gearset::Green, Direction::Forward),
         Motor::new(peripherals.port_12, Gearset::Green, Direction::Forward),
         peripherals.primary_controller,
+        peripherals.screen
     )
     .compete()
     .await;
-
-    Ok(())
 }
