@@ -1,6 +1,13 @@
+use alloc::{format, string::ToString};
 use core::time::Duration;
 
-use vexide::prelude::*;
+use vexide::{
+    devices::{
+        screen::{Text, TextSize},
+        smart::GpsSensor,
+    },
+    prelude::*,
+};
 
 use crate::utils::revolutions_from_duration;
 
@@ -10,7 +17,7 @@ pub struct Jeremiah {
     motor_right_front: Motor,
     motor_right_back: Motor,
     controller: Controller,
-    screen: BrainDisplay
+    screen: Screen,
 }
 
 impl Jeremiah {
@@ -20,7 +27,7 @@ impl Jeremiah {
         motor_right_front: Motor,
         motor_right_back: Motor,
         controller: Controller,
-        screen: Screen
+        screen: Screen,
     ) -> Self {
         Self {
             motor_left_front,
@@ -28,7 +35,7 @@ impl Jeremiah {
             motor_right_front,
             motor_right_back,
             controller,
-            screen: BrainDisplay::new(screen)
+            screen,
         }
     }
 }
@@ -74,9 +81,9 @@ impl Compete for Jeremiah {
 
             // Set the drive motors to our arcade control values.
             self.motor_left_front.set_voltage(left_voltage).ok();
-            self.motor_left_back.set_voltage(left_voltage).ok();
+            self.motor_left_back.set_voltage(-left_voltage).ok();
 
-            self.motor_right_front.set_voltage(right_voltage).ok();
+            self.motor_right_front.set_voltage(-right_voltage).ok();
             self.motor_right_back.set_voltage(right_voltage).ok();
 
             sleep(Controller::UPDATE_INTERVAL).await;
