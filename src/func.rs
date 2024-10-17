@@ -1,13 +1,6 @@
-use alloc::{format, string::ToString};
 use core::time::Duration;
 
-use vexide::{
-    devices::{
-        screen::{Text, TextSize},
-        smart::GpsSensor,
-    },
-    prelude::*,
-};
+use vexide::prelude::*;
 
 use crate::utils::revolutions_from_duration;
 
