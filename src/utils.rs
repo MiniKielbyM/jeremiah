@@ -1,9 +1,8 @@
 //! Utility functions.
 
-use alloc::vec::Vec;
 use core::{
     f64,
-    ops::{Add, Mul, Sub},
+    ops::{Add, AddAssign, Mul, Sub, SubAssign},
     time::Duration,
 };
 
@@ -14,19 +13,15 @@ pub fn revolutions_from_duration(duration: Duration, rpm: u32) -> f64 {
     (duration.as_secs_f64() / 60.0) * f64::from(rpm)
 }
 
-/// Converts radians to degrees.
-pub fn to_degrees(radians: f64) -> f64 {
-    radians * 180.0 / f64::consts::PI
-}
-
-/// Converts degrees to radians.
-pub fn to_radians(degrees: f64) -> f64 {
-    degrees * f64::consts::PI / 180.0
+/// Calculates the distance travelled in inches from how many revolutions a wheel has spun.
+/// Assumes `radius = 2`.
+pub fn distance_from_revolutions(revolutions: f64, rpm: u32) -> f64 {
+    12.57 * (f64::from(rpm) / 60.0 * revolutions)
 }
 
 /// A coordinate on a 2D grid.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Vector2(f64, f64);
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+pub struct Vector2(pub f64, pub f64);
 
 impl Vector2 {
     pub fn magnitude(&self) -> f64 {
@@ -43,7 +38,7 @@ impl Vector2 {
     pub fn project(&self, line: Line) -> Self {
         let dotvalue: f64 = line.direction.0 * (self.0 - line.origin.0)
             + line.direction.1 * (self.1 - line.origin.1);
-        Vector2(
+        Self(
             line.origin.0 + line.direction.0 * dotvalue,
             line.origin.1 + line.direction.1 * dotvalue,
         )
@@ -51,23 +46,37 @@ impl Vector2 {
 }
 
 impl Add for Vector2 {
-    type Output = Vector2;
+    type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
-        Vector2(self.0 + rhs.0, self.1 + rhs.1)
+        Self(self.0 + rhs.0, self.1 + rhs.1)
+    }
+}
+
+impl AddAssign for Vector2 {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+        self.1 += rhs.1;
     }
 }
 
 impl Sub for Vector2 {
-    type Output = Vector2;
+    type Output = Self;
     fn sub(self, rhs: Self) -> Self::Output {
-        Vector2(self.0 - rhs.0, self.1 - rhs.1)
+        Self(self.0 - rhs.0, self.1 - rhs.1)
+    }
+}
+
+impl SubAssign for Vector2 {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.0 -= rhs.0;
+        self.1 -= rhs.1;
     }
 }
 
 impl Mul for Vector2 {
-    type Output = Vector2;
+    type Output = Self;
     fn mul(self, rhs: Self) -> Self::Output {
-        Vector2(self.0 * rhs.0, self.1 * rhs.1)
+        Self(self.0 * rhs.0, self.1 * rhs.1)
     }
 }
 
@@ -82,11 +91,8 @@ pub struct Line {
 /// This shape should be rotated around its center.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Rectangle {
-    pub p1: Vector2,
-    pub p2: Vector2,
-    pub p3: Vector2,
-    pub p4: Vector2,
-    pub angle: f64,
+    points: [Vector2; 4],
+    angle: f64,
     width: f64,
     height: f64,
     origin: Vector2,
@@ -102,27 +108,16 @@ impl Rectangle {
             Vector2(origin.0 - width / 2.0, origin.1 + height / 2.0),
         ];
         if angle != 0.0 {
-            let s: f64 = angle.sin();
-            let c: f64 = angle.cos();
-            for p in points.iter_mut() {
-                p.0 -= origin.0;
-                p.1 -= origin.1;
-
-                let xnew: f64 = p.0 * c - p.1 * s;
-                let ynew: f64 = p.0 * s + p.1 * c;
-
-                p.0 = xnew + origin.1;
-                p.1 = ynew + origin.1;
+            for p in &mut points {
+                *p -= origin;
+                *p = p.rotate(angle) + origin;
             }
         }
         Self {
-            p1: points[0],
-            p2: points[1],
-            p3: points[2],
-            p4: points[3],
+            points,
+            angle,
             width,
             height,
-            angle,
             origin,
         }
     }
@@ -146,11 +141,9 @@ impl Rectangle {
 
     /// Rotates a `Rectangle` using `origin` as its center of rotation.
     pub fn rotate_around_point(&mut self, origin: Vector2, angle: f64) {
-        let mut points: [&mut Vector2; 4] =
-            [&mut self.p1, &mut self.p2, &mut self.p3, &mut self.p4];
         let s: f64 = angle.sin();
         let c: f64 = angle.cos();
-        for p in points.iter_mut() {
+        for p in &mut self.points {
             p.0 -= origin.0;
             p.1 -= origin.1;
 
@@ -162,19 +155,53 @@ impl Rectangle {
         }
     }
 
+    /// Re-calculates `self.points`.
+    fn recalculate_points(&mut self) {
+        let mut points: [Vector2; 4] = [
+            Vector2(
+                self.origin.0 - self.width / 2.0,
+                self.origin.1 - self.height / 2.0,
+            ),
+            Vector2(
+                self.origin.0 + self.width / 2.0,
+                self.origin.1 - self.height / 2.0,
+            ),
+            Vector2(
+                self.origin.0 + self.width / 2.0,
+                self.origin.1 + self.height / 2.0,
+            ),
+            Vector2(
+                self.origin.0 - self.width / 2.0,
+                self.origin.1 + self.height / 2.0,
+            ),
+        ];
+        if self.angle != 0.0 {
+            for p in &mut points {
+                *p -= self.origin;
+
+                *p = p.rotate(self.angle) + self.origin;
+            }
+        }
+        self.points = points;
+    }
+
+    /// Moves a shape relatively. `displacement` will be rotated by `self.angle`.
+    pub fn move_shape(&mut self, displacement: Vector2) {
+        self.origin += displacement;
+        self.recalculate_points();
+    }
+
     /// Checks if 2 `Rectangle`s collide/intersect.
-    pub fn is_colliding(&self, other: &Rectangle) -> bool {
+    pub fn is_colliding(&self, other: &Self) -> bool {
         self.is_projection_collide(other) && other.is_projection_collide(self)
     }
 
     /// Checks if a projection from a `Rectangle` collides with another.
-    fn is_projection_collide(&self, other: &Rectangle) -> bool {
+    fn is_projection_collide(&self, other: &Self) -> bool {
         let lines: [Line; 2] = other.get_axis();
-        let corners: [Vector2; 4] = [self.p1, self.p2, self.p3, self.p4];
+        let corners: [Vector2; 4] = self.points;
 
         for (dimension, line) in lines.iter().enumerate() {
-            // .0 = min, .1 = max
-            // .0 = signed_distance, .1 = corner, .2 = projected
             let mut futhers: Futhers = Futhers::default();
 
             // Size of `other` half size on line direction
@@ -224,6 +251,14 @@ impl Rectangle {
         }
 
         true
+    }
+
+    /// Checks if this `Rectangle` is fully inside another.
+    pub fn is_fully_inside(&self, other: &Self) -> bool {
+        self.origin.0 + self.width / 2.0 <= other.origin.0 + other.width / 2.0
+            && self.origin.0 - self.width / 2.0 >= other.origin.0 - other.width / 2.0
+            && self.origin.1 + self.height / 2.0 <= other.origin.1 + other.height / 2.0
+            && self.origin.1 - self.height / 2.0 >= other.origin.1 - other.height / 2.0
     }
 }
 

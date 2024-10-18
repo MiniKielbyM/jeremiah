@@ -4,7 +4,7 @@ description = "stupid robot nuisance. now in 3d!"
 readme = "README.md"
 license = "GPL-3.0-or-later"
 repository = "https://github.com/MiniKielbyM/jeremiah/"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Clover Johnson", "Phoebe Kielbasinski"]
 
@@ -15,5 +15,4 @@ compress = true
 
 [dependencies]
 anyhow = { version = "1.0.89", default-features = false }
-#libm = "0.2.8"
-vexide = "0.4.0"
+vexide = "0.4.2"

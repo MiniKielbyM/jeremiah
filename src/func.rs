@@ -2,7 +2,7 @@ use core::time::Duration;
 
 use vexide::prelude::*;
 
-use crate::utils::revolutions_from_duration;
+use crate::utils::{revolutions_from_duration, Rectangle};
 
 pub struct Jeremiah {
     motor_left_front: Motor,
@@ -11,16 +11,35 @@ pub struct Jeremiah {
     motor_right_back: Motor,
     controller: Controller,
     screen: Screen,
+    body: Rectangle,
 }
 
+/*
+    TODO: boundary checking
+
+    This should be projected a few (3-5) revolutions in advance.
+
+    Let V(L) be the velocity of the front left motor in inches per second,
+    and V(R) be that of the front right motor.
+    Let D be the distance in inches between the 2 wheels.
+
+    Linear velocity: V = (V(L) + V(R)) / 2
+    Angular velocity: W = (V(R) - V(L)) / D
+
+    Body angle += W
+    Body X += V * cos(Body angle)
+    Body Y += V * sin(Body angle)
+*/
+
 impl Jeremiah {
-    pub fn new(
+    pub const fn new(
         motor_left_front: Motor,
         motor_left_back: Motor,
         motor_right_front: Motor,
         motor_right_back: Motor,
         controller: Controller,
         screen: Screen,
+        body: Rectangle,
     ) -> Self {
         Self {
             motor_left_front,
@@ -29,6 +48,7 @@ impl Jeremiah {
             motor_right_back,
             controller,
             screen,
+            body,
         }
     }
 }
