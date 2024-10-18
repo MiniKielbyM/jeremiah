@@ -2,85 +2,73 @@ use core::time::Duration;
 
 use vexide::prelude::*;
 
-use crate::utils::{revolutions_from_duration, Rectangle};
+use crate::utils::{revolutions_from_duration, rpm_to_ips, Rectangle, Vector2, VehicleBody};
 
 pub struct Jeremiah {
-    motor_left_front: Motor,
-    motor_left_back: Motor,
-    motor_right_front: Motor,
-    motor_right_back: Motor,
-    controller: Controller,
-    screen: Screen,
-    body: Rectangle,
-}
+    pub motor_left_front: Motor,
+    pub motor_left_back: Motor,
+    pub motor_right_front: Motor,
+    pub motor_right_back: Motor,
 
-/*
-    TODO: boundary checking
+    pub controller: Controller,
+    pub screen: Screen,
 
-    This should be projected a few (3-5) revolutions in advance.
-
-    Let V(L) be the velocity of the front left motor in inches per second,
-    and V(R) be that of the front right motor.
-    Let D be the distance in inches between the 2 wheels.
-
-    Linear velocity: V = (V(L) + V(R)) / 2
-    Angular velocity: W = (V(R) - V(L)) / D
-
-    Body angle += W
-    Body X += V * cos(Body angle)
-    Body Y += V * sin(Body angle)
-*/
-
-impl Jeremiah {
-    pub const fn new(
-        motor_left_front: Motor,
-        motor_left_back: Motor,
-        motor_right_front: Motor,
-        motor_right_back: Motor,
-        controller: Controller,
-        screen: Screen,
-        body: Rectangle,
-    ) -> Self {
-        Self {
-            motor_left_front,
-            motor_left_back,
-            motor_right_front,
-            motor_right_back,
-            controller,
-            screen,
-            body,
-        }
-    }
+    pub body: VehicleBody,
 }
 
 impl Compete for Jeremiah {
     async fn autonomous(&mut self) {
+        // Define the boundaries of your operating area
+        let boundary = Rectangle::new(Vector2(0.0, 0.0), 48.0, 24.0, 0.0); // Example dimensions
+
+        // Set motor targets based on calculated revolutions
+        let target_revolutions = revolutions_from_duration(Duration::from_secs(15), 100);
         self.motor_left_front
             .set_target(MotorControl::Position(
-                Position::from_revolutions(revolutions_from_duration(Duration::from_secs(15), 100)),
+                Position::from_revolutions(target_revolutions),
                 100,
             ))
             .ok();
         self.motor_left_back
             .set_target(MotorControl::Position(
-                Position::from_revolutions(revolutions_from_duration(Duration::from_secs(15), 100)),
+                Position::from_revolutions(target_revolutions),
                 100,
             ))
             .ok();
         self.motor_right_front
             .set_target(MotorControl::Position(
-                Position::from_revolutions(revolutions_from_duration(Duration::from_secs(15), 100)),
+                Position::from_revolutions(target_revolutions),
                 100,
             ))
             .ok();
         self.motor_right_back
             .set_target(MotorControl::Position(
-                Position::from_revolutions(revolutions_from_duration(Duration::from_secs(15), 100)),
+                Position::from_revolutions(target_revolutions),
                 100,
             ))
             .ok();
 
         loop {
+            let projected_body: VehicleBody = self.body.project_future(
+                3,
+                rpm_to_ips(self.motor_left_front.velocity().unwrap_or(0).unsigned_abs()),
+                rpm_to_ips(
+                    self.motor_right_front
+                        .velocity()
+                        .unwrap_or(0)
+                        .unsigned_abs(),
+                ),
+                12.0,
+            );
+
+            if !projected_body.is_fully_inside(&boundary) {
+                self.motor_left_front.set_voltage(0.0).ok();
+                self.motor_left_back.set_voltage(0.0).ok();
+                self.motor_right_front.set_voltage(0.0).ok();
+                self.motor_right_back.set_voltage(0.0).ok();
+                break;
+            }
+
             sleep(Duration::from_millis(10)).await;
         }
     }

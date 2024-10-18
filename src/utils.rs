@@ -8,15 +8,44 @@ use core::{
 
 use crate::Float;
 
-/// Calculates how many revolutions it will take to spin for `durations` seconds at `rpm` revolutions per minute.
+/// Calculates how many revolutions it would take to spin for `durations` seconds at `rpm` revolutions per minute.
 pub fn revolutions_from_duration(duration: Duration, rpm: u32) -> f64 {
     (duration.as_secs_f64() / 60.0) * f64::from(rpm)
+}
+
+/// Calculates how much time it would take to spin `revolutions` revolutions at `rpm` revolutions per minute.
+pub fn duration_from_revolutions(revolutions: f64, rpm: u32) -> Duration {
+    Duration::from_secs_f64(revolutions / f64::from(rpm) * 60.0)
+}
+
+/// Calculates the circumfrence in inches of `degrees` degrees around the wheel.
+/// Assumes `radius = 2`.
+pub fn distance_from_degrees(degrees: f64) -> f64 {
+    0.034 * degrees
 }
 
 /// Calculates the distance travelled in inches from how many revolutions a wheel has spun.
 /// Assumes `radius = 2`.
 pub fn distance_from_revolutions(revolutions: f64, rpm: u32) -> f64 {
     12.57 * (f64::from(rpm) / 60.0 * revolutions)
+}
+
+/// Converts revolutions per minute to inches per second.
+/// Assumes `radius = 2`.
+pub fn rpm_to_ips(rpm: u32) -> f64 {
+    (f64::from(rpm) / 60.0) * 12.57
+}
+
+/// Calculates the linear velocity of the `VehicleBody`.
+/// This returns in/s.
+pub fn linear_velocity(velocity_left: f64, velocity_right: f64) -> f64 {
+    (velocity_left + velocity_right) / 2.0
+}
+
+/// Calculates the angular velocity of the `VehicleBody`.
+/// This returns rad/s.
+pub fn angular_velocity(velocity_left: f64, velocity_right: f64, wheel_distance: f64) -> f64 {
+    (velocity_right - velocity_left) / wheel_distance
 }
 
 /// A coordinate on a 2D grid.
@@ -141,17 +170,9 @@ impl Rectangle {
 
     /// Rotates a `Rectangle` using `origin` as its center of rotation.
     pub fn rotate_around_point(&mut self, origin: Vector2, angle: f64) {
-        let s: f64 = angle.sin();
-        let c: f64 = angle.cos();
         for p in &mut self.points {
-            p.0 -= origin.0;
-            p.1 -= origin.1;
-
-            let xnew: f64 = p.0 * c - p.1 * s;
-            let ynew: f64 = p.0 * s + p.1 * c;
-
-            p.0 = xnew + origin.1;
-            p.1 = ynew + origin.1;
+            *p -= origin;
+            *p = p.rotate(angle) + origin;
         }
     }
 
@@ -178,7 +199,6 @@ impl Rectangle {
         if self.angle != 0.0 {
             for p in &mut points {
                 *p -= self.origin;
-
                 *p = p.rotate(self.angle) + self.origin;
             }
         }
@@ -202,7 +222,7 @@ impl Rectangle {
         let corners: [Vector2; 4] = self.points;
 
         for (dimension, line) in lines.iter().enumerate() {
-            let mut futhers: Futhers = Futhers::default();
+            let mut futhers: Projection = Projection::default();
 
             // Size of `other` half size on line direction
             let rect_half_size: f64 = (if dimension == 0 {
@@ -221,9 +241,9 @@ impl Rectangle {
 
                 if futhers
                     .min
-                    .is_none_or(|x: FuthersChild| x.signed_distance > signed_distance)
+                    .is_none_or(|x: ProjectionResult| x.signed_distance > signed_distance)
                 {
-                    futhers.min = Some(FuthersChild {
+                    futhers.min = Some(ProjectionResult {
                         signed_distance,
                         corner,
                         projected,
@@ -231,9 +251,9 @@ impl Rectangle {
                 }
                 if futhers
                     .max
-                    .is_none_or(|x: FuthersChild| x.signed_distance < signed_distance)
+                    .is_none_or(|x: ProjectionResult| x.signed_distance < signed_distance)
                 {
-                    futhers.max = Some(FuthersChild {
+                    futhers.max = Some(ProjectionResult {
                         signed_distance,
                         corner,
                         projected,
@@ -264,15 +284,62 @@ impl Rectangle {
 
 #[derive(Debug, Default, Clone, Copy)]
 #[allow(dead_code)]
-struct Futhers {
-    min: Option<FuthersChild>,
-    max: Option<FuthersChild>,
+struct Projection {
+    min: Option<ProjectionResult>,
+    max: Option<ProjectionResult>,
 }
 
 #[derive(Debug, Clone, Copy)]
 #[allow(dead_code)]
-struct FuthersChild {
+struct ProjectionResult {
     signed_distance: f64,
     corner: Vector2,
     projected: Vector2,
 }
+
+pub type VehicleBody = Rectangle;
+
+impl VehicleBody {
+    /// Projects this `Rectangle` `revolutions` revolutions into the future to see how it moves.
+    /// A safe bet for setting `revolutions` should be 1-5 revolutions.
+    pub fn project_future(
+        &self,
+        revolutions: i32,
+        velocity_left: f64,
+        velocity_right: f64,
+        wheel_distance: f64,
+    ) -> Self {
+        let mut instance: Self = self.clone();
+        for _ in 0..revolutions {
+            instance.drive(velocity_left, velocity_right, wheel_distance);
+        }
+
+        instance
+    }
+
+    /// This moves the `VehicleBody` in 2D space, according to the motor velocity.
+    pub fn drive(&mut self, velocity_left: f64, velocity_right: f64, wheel_distance: f64) {
+        let v: f64 = linear_velocity(velocity_left, velocity_right);
+        let omega: f64 = angular_velocity(velocity_left, velocity_right, wheel_distance);
+
+        self.angle += omega;
+        self.move_shape(Vector2(v * self.angle.cos(), v * self.angle.sin()));
+    }
+}
+
+/*
+    TODO: boundary checking
+
+    This should be projected a few (3-5) revolutions in advance.
+
+    Let V(L) be the velocity of the front left motor in inches per second,
+    and V(R) be that of the front right motor.
+    Let D be the distance in inches between the 2 sides of wheels.
+
+    Linear velocity: V = (V(L) + V(R)) / 2
+    Angular velocity: W = (V(R) - V(L)) / D
+
+    Body angle += W
+    Body X += V * cos(Body angle)
+    Body Y += V * sin(Body angle)
+*/
