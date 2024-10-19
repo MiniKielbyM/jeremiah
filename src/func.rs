@@ -18,10 +18,10 @@ pub struct Jeremiah {
 impl Compete for Jeremiah {
     async fn autonomous(&mut self) {
         // Define the boundaries of your operating area
-        let boundary = Rectangle::new(Vector2(36.0, 72.0), 72.0, 144.0, 0.0); // Example dimensions
+        let boundary: Rectangle = Rectangle::new(Vector2(36.0, 72.0), 72.0, 144.0, 0.0); // Example dimensions
 
         // Set motor targets based on calculated revolutions
-        let target_revolutions = revolutions_from_duration(Duration::from_secs(15), 100);
+        let target_revolutions: f64 = revolutions_from_duration(Duration::from_secs(15), 100);
 
         self.motor_left_front
             .set_target(MotorControl::Position(
@@ -68,11 +68,6 @@ impl Compete for Jeremiah {
                 self.motor_left_back.brake(BrakeMode::Hold).ok();
                 self.motor_right_front.brake(BrakeMode::Hold).ok();
                 self.motor_right_back.brake(BrakeMode::Hold).ok();
-
-                self.motor_left_front.set_voltage(0.0).ok();
-                self.motor_left_back.set_voltage(0.0).ok();
-                self.motor_right_front.set_voltage(0.0).ok();
-                self.motor_right_back.set_voltage(0.0).ok();
                 break;
             }
 
