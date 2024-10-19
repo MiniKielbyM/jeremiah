@@ -300,8 +300,8 @@ struct ProjectionResult {
 pub type VehicleBody = Rectangle;
 
 impl VehicleBody {
-    /// Projects this `Rectangle` `revolutions` revolutions into the future to see how it moves.
-    /// A safe bet for setting `revolutions` should be 1-5 revolutions.
+    /// Projects this `Rectangle` `moment` moments into the future to see how it moves.
+    /// A safe bet for setting `moment` should be 1-5.
     pub fn project_future(
         &self,
         revolutions: i32,
