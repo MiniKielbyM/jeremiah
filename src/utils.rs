@@ -61,22 +61,22 @@ fn plot_route(center: Vector2, goal: Vector2) -> [f64; 2] {
     let angle = slope.to_degrees();
     let distance = ((center.x - goal.x).powi(2) + (center.y - goal.y).powi(2)).sqrt();
     if goal.x == center.x {
-        [-angle, distance];
+        [-angle, distance]
     } 
     else if goal.x > center.x {
-        [angle, -distance];
+        [angle, -distance]
     } 
     else {
-        [angle, distance];
+        [angle, distance]
     }
 }
 
 // Helper method to convert radians to degrees
-trait Radians_to_degrees {
+trait RadiansToDegrees {
     fn to_degrees(self) -> f64;
 }
 
-impl Radians_to_degrees for f64 {
+impl RadiansToDegrees for f64 {
     fn to_degrees(self) -> f64 {
         self * (180.0 / PI)
     }
