@@ -21,54 +21,35 @@ impl Compete for Jeremiah {
         let boundary: Rectangle = Rectangle::new(Vector2(36.0, 72.0), 72.0, 144.0, 0.0); // Example dimensions
 
         // Set motor targets based on calculated revolutions
-        let target_revolutions: f64 = revolutions_from_duration(Duration::from_secs(15), 100);
+        let volts: f64 = 12.0;
 
-        self.motor_left_front
-            .set_target(MotorControl::Position(
-                Position::from_revolutions(-target_revolutions),
-                100,
-            ))
-            .ok();
-
-        self.motor_left_back
-            .set_target(MotorControl::Position(
-                Position::from_revolutions(-target_revolutions),
-                100,
-            ))
-            .ok();
-
-        self.motor_right_front
-            .set_target(MotorControl::Position(
-                Position::from_revolutions(-target_revolutions),
-                100,
-            ))
-            .ok();
-        self.motor_right_back
-            .set_target(MotorControl::Position(
-                Position::from_revolutions(target_revolutions),
-                100,
-            ))
-            .ok();
+        self.motor_left_front.set_voltage(volts).ok();
+        self.motor_left_back.set_voltage(volts).ok();
+        self.motor_right_front.set_voltage(volts).ok();
+        self.motor_right_back.set_voltage(volts).ok();
 
         loop {
             let projected_body: VehicleBody = self.body.project_future(
                 5,
-                rpm_to_ipms(self.motor_left_front.velocity().unwrap_or(0).unsigned_abs())*10.0,
-                rpm_to_ipms(
-                    self.motor_right_front
-                        .velocity()
-                        .unwrap_or(0)
-                        .unsigned_abs(),
-                )*10.0,
+                rpm_to_ipms(self.motor_left_front.voltage().unwrap() as u32) * 10.0,
+                rpm_to_ipms(self.motor_right_front.voltage().unwrap() as u32) * 10.0,
             );
 
+            println!(
+                "{:#?}\n{:#?}\n{}",
+                self.body,
+                projected_body,
+                projected_body.is_fully_inside(&boundary)
+            );
             if !projected_body.is_fully_inside(&boundary) {
-                self.motor_left_front.brake(BrakeMode::Hold).ok();
-                self.motor_left_back.brake(BrakeMode::Hold).ok();
-                self.motor_right_front.brake(BrakeMode::Hold).ok();
-                self.motor_right_back.brake(BrakeMode::Hold).ok();
+                self.motor_left_front.set_voltage(0.0).ok();
+                self.motor_left_back.set_voltage(0.0).ok();
+                self.motor_right_front.set_voltage(0.0).ok();
+                self.motor_right_back.set_voltage(0.0).ok();
                 break;
             }
+            self.body
+                .drive(rpm_to_ipms(100) * 10.0, rpm_to_ipms(100) * 10.0);
 
             sleep(Duration::from_millis(10)).await;
         }

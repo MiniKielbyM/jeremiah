@@ -22,7 +22,7 @@ async fn main(peripherals: Peripherals) -> Result<()> {
         screen: peripherals.screen,
 
         // TODO: Measure actual vehicle
-        body: VehicleBody::new(Vector2(8.88, 9.24), 17.75, 18.5, f64::to_radians(90.0)),
+        body: VehicleBody::new(Vector2(8.875, 9.25), 17.75, 18.5, 0.0),
     }
     .compete()
     .await;
