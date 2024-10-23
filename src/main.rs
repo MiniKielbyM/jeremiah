@@ -8,7 +8,6 @@ extern crate alloc;
 
 use anyhow::Result;
 use func::Jeremiah;
-use utils::{Vector2, VehicleBody};
 use vexide::{prelude::*, startup::banner::themes::THEME_TRANS};
 
 #[vexide::main(banner(theme = THEME_TRANS))]
@@ -19,10 +18,7 @@ async fn main(peripherals: Peripherals) -> Result<()> {
         motor_right_front: Motor::new(peripherals.port_11, Gearset::Green, Direction::Forward),
         motor_right_back: Motor::new(peripherals.port_12, Gearset::Green, Direction::Reverse),
         controller: peripherals.primary_controller,
-        screen: peripherals.screen,
-
-        // TODO: Measure actual vehicle
-        body: VehicleBody::new(Vector2(8.88, 9.24), 17.75, 18.5, f64::to_radians(90.0)),
+        screen: peripherals.screen
     }
     .compete()
     .await;
