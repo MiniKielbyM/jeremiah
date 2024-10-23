@@ -2,7 +2,7 @@ use core::time::Duration;
 
 use vexide::prelude::*;
 
-use crate::utils::{revolutions_from_duration, rpm_to_ips, Rectangle, Vector2, VehicleBody};
+//use crate::utils::{revolutions_from_duration, rpm_to_ips, Rectangle, Vector2, VehicleBody};
 
 pub struct Jeremiah {
     pub motor_left_front: Motor,
@@ -18,7 +18,7 @@ pub struct Jeremiah {
 impl Compete for Jeremiah {
     async fn autonomous(&mut self) {
         // Define the boundaries of your operating area
-        let boundary: Rectangle = Rectangle::new(Vector2(36.0, 72.0), 72.0, 144.0, 0.0); // Example dimensions
+  //      let boundary: Rectangle = Rectangle::new(Vector2(36.0, 72.0), 72.0, 144.0, 0.0); // Example dimensions
 
         // Set motor targets based on calculated revolutions
         let target_revolutions: f64 = revolutions_from_duration(Duration::from_secs(15), 100);
@@ -50,7 +50,7 @@ impl Compete for Jeremiah {
             ))
             .ok();
 
-        loop {
+    /*    loop {
             let projected_body: VehicleBody = self.body.project_future(
                 5,
                 rpm_to_ips(self.motor_left_front.velocity().unwrap_or(0).unsigned_abs()),
@@ -72,7 +72,8 @@ impl Compete for Jeremiah {
             }
 
             sleep(Duration::from_millis(10)).await;
-        }
+        } */
+         
     }
 
     async fn driver(&mut self) {
