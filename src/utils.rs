@@ -7,7 +7,7 @@ use core::{
 };
 use crate::Float;
 
-const pi = std::f64::consts::PI;
+const pi: f64 = consts::PI;
 
 /// Calculates how many revolutions it would take to spin for `durations` seconds at `rpm` revolutions per minute.
 pub fn revolutions_from_duration(duration: Duration, rpm: u32) -> f64 {
