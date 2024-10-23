@@ -5,8 +5,9 @@ use core::{
     ops::{Add, AddAssign, Mul, Sub, SubAssign},
     time::Duration,
 };
-use std::f64::consts::PI;
 use crate::Float;
+
+let pi = std::f64::consts::PI;
 
 /// Calculates how many revolutions it would take to spin for `durations` seconds at `rpm` revolutions per minute.
 pub fn revolutions_from_duration(duration: Duration, rpm: u32) -> f64 {
@@ -77,7 +78,7 @@ trait RadiansToDegrees {
 
 impl RadiansToDegrees for f64 {
     fn to_degrees(self) -> f64 {
-        self * (180.0 / PI)
+        self * (180.0 / pi)
     }
 }
 
