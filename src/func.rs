@@ -2,7 +2,7 @@ use core::time::Duration;
 
 use vexide::prelude::*;
 
-use crate::utils::{revolutions_from_duration, /*rpm_to_ips,Rectangle, Vector2, VehicleBody*/};
+use crate::utils::revolutions_from_duration;
 
 pub struct Jeremiah {
     pub motor_left_front: Motor,
@@ -11,16 +11,11 @@ pub struct Jeremiah {
     pub motor_right_back: Motor,
 
     pub controller: Controller,
-    pub screen: Screen
-    //pub body: VehicleBody,
+    pub screen: Screen,
 }
 
 impl Compete for Jeremiah {
     async fn autonomous(&mut self) {
-        // Define the boundaries of your operating area
-  //      let boundary: Rectangle = Rectangle::new(Vector2(36.0, 72.0), 72.0, 144.0, 0.0); // Example dimensions
-
-        // Set motor targets based on calculated revolutions
         let target_revolutions: f64 = revolutions_from_duration(Duration::from_secs(15), 100);
 
         self.motor_left_front
@@ -50,30 +45,9 @@ impl Compete for Jeremiah {
             ))
             .ok();
 
-    /*    loop {
-            let projected_body: VehicleBody = self.body.project_future(
-                5,
-                rpm_to_ips(self.motor_left_front.velocity().unwrap_or(0).unsigned_abs()),
-                rpm_to_ips(
-                    self.motor_right_front
-                        .velocity()
-                        .unwrap_or(0)
-                        .unsigned_abs(),
-                ),
-                12.0,
-            );
-
-            if !projected_body.is_fully_inside(&boundary) {
-                self.motor_left_front.brake(BrakeMode::Hold).ok();
-                self.motor_left_back.brake(BrakeMode::Hold).ok();
-                self.motor_right_front.brake(BrakeMode::Hold).ok();
-                self.motor_right_back.brake(BrakeMode::Hold).ok();
-                break;
-            }
-
+        loop {
             sleep(Duration::from_millis(10)).await;
-        } */
-
+        }
     }
 
     async fn driver(&mut self) {
