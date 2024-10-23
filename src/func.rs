@@ -11,8 +11,8 @@ pub struct Jeremiah {
     pub motor_right_back: Motor,
 
     pub controller: Controller,
-    pub screen: Screen,
-    pub body: VehicleBody,
+    pub screen: Screen
+    //pub body: VehicleBody,
 }
 
 impl Compete for Jeremiah {

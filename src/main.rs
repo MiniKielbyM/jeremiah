@@ -1,4 +1,3 @@
-#![no_std]
 #![no_main]
 
 mod func;
@@ -19,10 +18,10 @@ async fn main(peripherals: Peripherals) -> Result<()> {
         motor_right_front: Motor::new(peripherals.port_11, Gearset::Green, Direction::Forward),
         motor_right_back: Motor::new(peripherals.port_12, Gearset::Green, Direction::Reverse),
         controller: peripherals.primary_controller,
-        screen: peripherals.screen,
+        screen: peripherals.screen
 
         // TODO: Measure actual vehicle
-///        body: VehicleBody::new(Vector2(8.88, 9.24), 17.75, 18.5, f64::to_radians(90.0)),
+//        body: VehicleBody::new(Vector2(8.88, 9.24), 17.75, 18.5, f64::to_radians(90.0)),
     }
     .compete()
     .await;
