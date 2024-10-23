@@ -5,7 +5,7 @@ use core::{
     ops::{Add, AddAssign, Mul, Sub, SubAssign},
     time::Duration,
 };
-
+use std::f64::consts::PI;
 use crate::Float;
 
 /// Calculates how many revolutions it would take to spin for `durations` seconds at `rpm` revolutions per minute.
@@ -48,6 +48,41 @@ pub fn angular_velocity(velocity_left: f64, velocity_right: f64, wheel_distance:
     (velocity_right - velocity_left) / wheel_distance
 }
 
+#[derive(Debug)]
+struct Vector2 {
+    x: f64,
+    y: f64,
+}
+
+fn plotRoute(center: Vector2, goal: Vector2) -> [f64; 2] {
+    
+    let slope = (center.y - goal.y) / (center.x - goal.x);
+    let angle = slope.to_degrees();
+    let distance = ((center.x - goal.x).powi(2) + (center.y - goal.y).powi(2)).sqrt();
+    if goal.x == center.x {
+        return [-angle, distance];
+    } 
+    else if goal.x > center.x {
+        return [angle, -distance];
+    } 
+    else {
+        return [angle, distance];
+    }
+}
+
+// Helper method to convert radians to degrees
+trait RadiansToDegrees {
+    fn to_degrees(self) -> f64;
+}
+
+impl RadiansToDegrees for f64 {
+    fn to_degrees(self) -> f64 {
+        self * (180.0 / PI)
+    }
+}
+
+
+/*
 /// A coordinate on a 2D grid.
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct Vector2(pub f64, pub f64);
@@ -327,6 +362,8 @@ impl VehicleBody {
     }
 }
 
+//calculates distance and expected angle to move to position
+
 /*
     TODO: boundary checking
 
@@ -342,4 +379,5 @@ impl VehicleBody {
     Body angle += W
     Body X += V * cos(Body angle)
     Body Y += V * sin(Body angle)
+*/
 */
