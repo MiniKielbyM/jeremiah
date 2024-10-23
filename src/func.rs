@@ -2,7 +2,7 @@ use core::time::Duration;
 
 use vexide::prelude::*;
 
-use crate::utils::{revolutions_from_duration, rpm_to_ips, Rectangle, Vector2, VehicleBody};
+use crate::utils::{revolutions_from_duration, rpm_to_ipms, Rectangle, Vector2, VehicleBody};
 
 pub struct Jeremiah {
     pub motor_left_front: Motor,
@@ -53,14 +53,13 @@ impl Compete for Jeremiah {
         loop {
             let projected_body: VehicleBody = self.body.project_future(
                 5,
-                rpm_to_ips(self.motor_left_front.velocity().unwrap_or(0).unsigned_abs()),
-                rpm_to_ips(
+                rpm_to_ipms(self.motor_left_front.velocity().unwrap_or(0).unsigned_abs())*10.0,
+                rpm_to_ipms(
                     self.motor_right_front
                         .velocity()
                         .unwrap_or(0)
                         .unsigned_abs(),
-                ),
-                12.0,
+                )*10.0,
             );
 
             if !projected_body.is_fully_inside(&boundary) {

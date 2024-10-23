@@ -8,6 +8,8 @@ use core::{
 
 use crate::Float;
 
+const WHEEL_DISTANCE: f64 = 12.0;
+
 /// Calculates how many revolutions it would take to spin for `durations` seconds at `rpm` revolutions per minute.
 pub fn revolutions_from_duration(duration: Duration, rpm: u32) -> f64 {
     (duration.as_secs_f64() / 60.0) * f64::from(rpm)
@@ -30,10 +32,10 @@ pub fn distance_from_revolutions(revolutions: f64, rpm: u32) -> f64 {
     12.57 * (f64::from(rpm) / 60.0 * revolutions)
 }
 
-/// Converts revolutions per minute to inches per second.
+/// Converts revolutions per minute to inches per millisecond.
 /// Assumes `radius = 2`.
-pub fn rpm_to_ips(rpm: u32) -> f64 {
-    (f64::from(rpm) / 60.0) * 12.57
+pub fn rpm_to_ipms(rpm: u32) -> f64 {
+    (f64::from(rpm) / 60.0) * 12.57 / 1000.0
 }
 
 /// Calculates the linear velocity of the `VehicleBody`.
@@ -44,8 +46,8 @@ pub fn linear_velocity(velocity_left: f64, velocity_right: f64) -> f64 {
 
 /// Calculates the angular velocity of the `VehicleBody`.
 /// This returns rad/s.
-pub fn angular_velocity(velocity_left: f64, velocity_right: f64, wheel_distance: f64) -> f64 {
-    (velocity_right - velocity_left) / wheel_distance
+pub fn angular_velocity(velocity_left: f64, velocity_right: f64) -> f64 {
+    (velocity_right - velocity_left) / WHEEL_DISTANCE
 }
 
 /// A coordinate on a 2D grid.
@@ -300,46 +302,39 @@ struct ProjectionResult {
 pub type VehicleBody = Rectangle;
 
 impl VehicleBody {
-    /// Projects this `Rectangle` `moment` moments into the future to see how it moves.
+    /// Projects this `Rectangle` `moment` 10s of milliseconds into the future to see how it moves.
     /// A safe bet for setting `moment` should be 1-5.
-    pub fn project_future(
-        &self,
-        revolutions: i32,
-        velocity_left: f64,
-        velocity_right: f64,
-        wheel_distance: f64,
-    ) -> Self {
+    pub fn project_future(&self, moments: i32, velocity_left: f64, velocity_right: f64) -> Self {
         let mut instance: Self = self.clone();
-        for _ in 0..revolutions {
-            instance.drive(velocity_left, velocity_right, wheel_distance);
+        for _ in 0..moments {
+            instance.drive(velocity_left, velocity_right);
         }
 
         instance
     }
 
+    /// Projects this `Rectangle` until it's out of bounds.
+    pub fn revolutions_until_oob(
+        &self,
+        velocity_left: f64,
+        velocity_right: f64,
+        boundary: &Rectangle,
+    ) -> u32 {
+        let mut instance: Self = self.clone();
+        let mut count: u32 = 0;
+        while instance.is_fully_inside(boundary) {
+            instance.drive(velocity_left, velocity_right);
+            count += 1;
+        }
+        count - 1
+    }
+
     /// This moves the `VehicleBody` in 2D space, according to the motor velocity.
-    pub fn drive(&mut self, velocity_left: f64, velocity_right: f64, wheel_distance: f64) {
+    pub fn drive(&mut self, velocity_left: f64, velocity_right: f64) {
         let v: f64 = linear_velocity(velocity_left, velocity_right);
-        let omega: f64 = angular_velocity(velocity_left, velocity_right, wheel_distance);
+        let omega: f64 = angular_velocity(velocity_left, velocity_right);
 
         self.angle += omega;
         self.move_shape(Vector2(v * self.angle.cos(), v * self.angle.sin()));
     }
 }
-
-/*
-    TODO: boundary checking
-
-    This should be projected a few (3-5) revolutions in advance.
-
-    Let V(L) be the velocity of the front left motor in inches per second,
-    and V(R) be that of the front right motor.
-    Let D be the distance in inches between the 2 sides of wheels.
-
-    Linear velocity: V = (V(L) + V(R)) / 2
-    Angular velocity: W = (V(R) - V(L)) / D
-
-    Body angle += W
-    Body X += V * cos(Body angle)
-    Body Y += V * sin(Body angle)
-*/
