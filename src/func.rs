@@ -2,7 +2,7 @@ use core::time::Duration;
 
 use vexide::prelude::*;
 
-//use crate::utils::{revolutions_from_duration, rpm_to_ips, Rectangle, Vector2, VehicleBody};
+use crate::utils::{revolutions_from_duration, rpm_to_ips/*Rectangle, Vector2, VehicleBody*/};
 
 pub struct Jeremiah {
     pub motor_left_front: Motor,
@@ -73,7 +73,7 @@ impl Compete for Jeremiah {
 
             sleep(Duration::from_millis(10)).await;
         } */
-         
+
     }
 
     async fn driver(&mut self) {
