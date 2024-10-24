@@ -62,8 +62,8 @@ fn plot_route(center: &Vector2, goal: &Vector2) -> (f64, f64) {
 }
 
 fn revolutions_from_route(center: &Vector2, goal: &Vector2, rotation: f64) -> (f64, f64) {
-    let demoVec = Vector2(1.0,1.0)
-    plot_route(demoVec, demoVec)
+    let demoVec = Vector2(1.0,1.0);
+    plot_route(demoVec, demoVec);
     let expectedAngle: f64 = plot_route(center, goal).0;
     let expectedDistance: f64 = plot_route(center, goal).1;
     //TODO: find out how many rotations it takes to rotate 90 degrees
