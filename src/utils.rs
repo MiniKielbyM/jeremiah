@@ -50,7 +50,7 @@ pub fn angular_velocity(velocity_left: f64, velocity_right: f64, wheel_distance:
 #[derive(Debug)]
 struct Vector2(f64, f64);
 
-fn plot_route(center: Vector2, goal: Vector2) -> (f64, f64) {
+fn plot_route(center: &Vector2, goal: &Vector2) -> (f64, f64) {
     let angle: f64 = ((center.1 - goal.1) / (center.0 - goal.0)).atan().to_degrees();
     let distance: f64 = ((center.0 - goal.0).powi(2) + (center.1 - goal.1).powi(2)).sqrt();
     if goal.0 == center.0 {
@@ -61,12 +61,11 @@ fn plot_route(center: Vector2, goal: Vector2) -> (f64, f64) {
     (angle, distance)
 }
 
-fn revolutions_from_route(center: Vector2, goal: Vector2, rotation: f64){
+fn revolutions_from_route(center: &Vector2, goal: &Vector2, rotation: f64) {
     let expectedAngle: f64 = plot_route(center, goal).0;
-    let expectedDistance: f64 = plot_route(center, goal).0;
+    let expectedDistance: f64 = plot_route(center, goal).1;
     //TODO: find out how many rotations it takes to rotate 90 degrees
     //TODO: find out how far the robot goes in 1 revolution
     let distance: f64 = 1.0; // how far the robot goes in 1 revolution, in inches
     let distanceRevolutions: f64 = expectedDistance / distance; // how many revolutions it takes to get to the point, assumes correct angle. 
-
 } 
