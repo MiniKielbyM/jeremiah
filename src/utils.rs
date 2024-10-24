@@ -70,5 +70,5 @@ fn revolutions_from_route(center: &Vector2, goal: &Vector2, rotation: f64) {
     let distanceRevolutions: f64 = expectedDistance / distance; // how many revolutions it takes to get to the point, assumes correct angle. 
     let angle: f64 = 0.0/90.0; // how many degrees it takes to go 90 degrees
     let angleRevolutions: f64 = (expectedAngle - rotation) / angle;
-
+    (distanceRevolutions,angleRevolutions)
 }
