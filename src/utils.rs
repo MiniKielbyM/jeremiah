@@ -66,7 +66,7 @@ fn revolutions_from_route(center: Vector2, goal: Vector2, rotation: f64){
     let expectedDistance: f64 = plot_route(center, goal).0;
     //TODO: find out how many rotations it takes to rotate 90 degrees
     //TODO: find out how far the robot goes in 1 revolution
-    let distance: f64 = 1; /// how far the robot goes in 1 revolution, in inches
-    let distanceRevolutions: f64 = expectedDistance / distance; /// how many revolutions it takes to get to the point, assumes correct angle. 
+    let distance: f64 = 1.0; // how far the robot goes in 1 revolution, in inches
+    let distanceRevolutions: f64 = expectedDistance / distance; // how many revolutions it takes to get to the point, assumes correct angle. 
 
 } 
